@@ -1,12 +1,19 @@
-import React from "react";
+import { observer } from "mobx-react-lite";
+import React, { SyntheticEvent, useState } from "react";
 import { Button, Item, Label, Segment } from "semantic-ui-react";
-import { Activity } from "../../../app/models/activity";
+import { useStore } from "../../../app/stores/store";
 
-interface Props {
-    activities: Activity[];
-}
+export default observer(function ActivityList() {
+    
+    const {activityStore} = useStore();
+    const {deleteActivity, activities, loading} = activityStore;
+    const [target, setTarget] = useState('');
 
-export default function ActivityList({ activities }: Props) {
+    function handleActivityDelete(e: SyntheticEvent<HTMLButtonElement>, id: string) {
+        setTarget(e.currentTarget.name);
+        console.log(e.currentTarget.name, target);
+        deleteActivity(id);
+    }
 
     return (
         <Segment>
@@ -25,7 +32,14 @@ export default function ActivityList({ activities }: Props) {
                                 <div>{activity.city}, {activity.venue}</div>
                             </Item.Description>
                             <Item.Extra>
-                                <Button floated='right' content='View' color='blue' />
+                                <Button onClick={() => activityStore.selectActivity(activity.id)} floated='right' content='View' color='blue' />
+                                <Button
+                                    name={activity.id}
+                                    loading={loading && target === activity.id}
+                                    onClick={(e) => handleActivityDelete(e, activity.id)}
+                                    floated='right'
+                                    content='Delete'
+                                    color='red' />
                                 <Label basic content={activity.category} />
                             </Item.Extra>
                         </Item.Content>
@@ -34,4 +48,4 @@ export default function ActivityList({ activities }: Props) {
             </Item.Group>
         </Segment>
     )
-}
+})
